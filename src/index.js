@@ -94,7 +94,15 @@ function sendingNotification(ar,lastState) {
  
     let msg = "[Virtual Browser] ["+emote+"]: " + content + ""
     console.log(msg)
-    bot.sendMessage(msg)
+
+    // Send the message to telegram only if the first user joined the session or the last user leaved the session
+    if(emote == EMOTES.bad || emote == EMOTES.good)
+    {
+        bot.sendMessage(msg);
+    }else{
+        bot.sendMessage(msg,null,null,true);
+    }
+    
 }
 
 // check if all .env variables are set
