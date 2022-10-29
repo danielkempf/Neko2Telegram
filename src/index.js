@@ -1,16 +1,14 @@
-//simple hardcoded checker if someone is in a neko browser
-
+require("dotenv").config()
 var XMLHttpRequest = require('xhr2');
 var telegrambot = require("./telegramMessanger").Bot
-const bot = new telegrambot("YOUR-BOT-TOKEN-HERE", "YOUR-DEFAULT-CLIENT-ID")
+
+// PUBLIC VARIABLES 
+let bot;
 let delay = 30
-// if you are using neko-rooms just but in here your domain/roomid 
-let address= "http://browser.kempfimperium.de/dk"
-// if you are using default neko its maybe cool to put your port in here or just put it in address like ":8080"
-let port = ""
-//Here you need to pass your room admin password
-let password = "testtester123"
-//Yea, saving the last state to not spam Telegram only if something changed.
+let nekoAddress= "http://localhost:8080"
+let nekoPassword = "neko"
+let telegramToken = "";
+let telegramChatId = "";
 let lastState = 0;
 
 // You want some cool looking messages? Then you need it :)
@@ -33,7 +31,7 @@ function main()
 
 // Send a request to your neko browser end get stats like connections or members
 function checkServer() {
-    fetch(address+port+"/stats?pwd="+password).then((response) => {
+    fetch(nekoAddress+"/stats?pwd="+nekoPassword).then((response) => {
         return response.json();
     }).then((data) => {
 
@@ -85,10 +83,10 @@ function sendingNotification(ar,lastState) {
             }
             if(ar.length != 1)
             {
-                content = content + "\nHere is a list of connected users"
+                content = content + "%0AHere is a list of connected users"
                 for (let i = 0; i < ar.length; i++) {
                     const username = ar[i];
-                    content = content + "\n" + username;
+                    content = content + "%0A<b><i>" + username + "</i></b>";
                 }
             }
          
@@ -96,7 +94,45 @@ function sendingNotification(ar,lastState) {
  
     let msg = "[Virtual Browser] ["+emote+"]: " + content + ""
     console.log(msg)
-    bot.sendMessage(msg);
+    bot.sendMessage(msg)
 }
 
-main();
+// check if all .env variables are set
+if(!process.env.TELEGRAM_TOKEN || !process.env.TELEGRAM_CHATID || !process.env.NEKO_ADDRESS || !process.env.NEKO_PASSWORD || !process.env.DELAY)
+{
+    console.log("Please set all .env variables!")
+    //find variables which are not set
+    if(!process.env.TELEGRAM_TOKEN)
+    {
+        console.log("TELEGRAM_TOKEN is not set!")
+    }
+    if(!process.env.TELEGRAM_CHATID)
+    {
+        console.log("TELEGRAM_CHATID is not set!")
+    }
+    if(!process.env.NEKO_ADDRESS)
+    {
+        console.log("NEKO_ADDRESS is not set!")
+    }
+    if(!process.env.NEKO_PASSWORD)
+    {
+        console.log("NEKO_PASSWORD is not set!")
+    }
+    if(!process.env.DELAY)
+    {
+        console.log("DELAY is not set!")
+    }
+
+    return;    
+}else{
+    // set variables
+    
+    nekoAddress = process.env.NEKO_ADDRESS
+    nekoPassword = process.env.NEKO_PASSWORD
+    delay = process.env.DELAY
+    telegramToken = process.env.TELEGRAM_TOKEN
+    telegramChatId = process.env.TELEGRAM_CHATID
+    bot = new telegrambot(telegramToken,telegramChatId) // create telegram bot instance
+    main();
+}
+
